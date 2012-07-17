@@ -39,8 +39,8 @@ module TicTacToe
     end
 
     private
-    attr_reader :board, :won
-    attr_accessor :state, :replay_answer
+    attr_reader :board
+    attr_accessor :state, :replay_answer, :winner
 
     def human_turn
       puts "Make your move"
@@ -59,10 +59,7 @@ module TicTacToe
     end
 
     def program_turn
-      ProgramReaction.new(
-        :board => board,
-        :game => self
-      ).react
+      ProgramReaction.new(:board => board).react
     end
 
     def check_for_win_or_draw
@@ -74,6 +71,11 @@ module TicTacToe
       WINS.each do |win|
         if win.all?{ |p| board.o_marks.include?(p) }
           self.state = 'ended'
+          self.winner = 'o'
+        end
+        if win.all?{ |p| board.x_marks.include?(p) }
+          self.state = 'ended'
+          self.winner = 'x'
         end
       end
     end
@@ -83,8 +85,8 @@ module TicTacToe
     end
 
     def announce_result
-      if won
-        puts 'o wins!'
+      if winner
+        puts "#{winner} wins!"
       else
         puts 'draw!'
       end
@@ -109,7 +111,6 @@ module TicTacToe
   class ProgramReaction
     def initialize(args)
       @board = args[:board]
-      @game = args[:game]
     end
 
     def react
@@ -126,7 +127,7 @@ module TicTacToe
     end
 
     private
-    attr_reader :board, :game
+    attr_reader :board
 
     def play_random
       random_location = board.available_positions.sample
@@ -166,7 +167,6 @@ module TicTacToe
 
     def take_win
       prevent_or_take_win('take')
-      game.won = true
     end
 
     def humanize
