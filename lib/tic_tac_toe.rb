@@ -69,13 +69,11 @@ module TicTacToe
 
     def check_win
       WINS.each do |win|
-        if win.all?{ |p| board.o_marks.include?(p) }
-          self.state = 'ended'
-          self.winner = 'o'
-        end
-        if win.all?{ |p| board.x_marks.include?(p) }
-          self.state = 'ended'
-          self.winner = 'x'
+        ['x', 'o'].each do |player|
+          if win.all?{ |p| board.send(player + '_marks').include?(p) }
+            self.state = 'ended'
+            self.winner = player
+          end
         end
       end
     end
