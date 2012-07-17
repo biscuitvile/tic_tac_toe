@@ -1,8 +1,7 @@
 # Tic Tac Toe
 
 This is a tic tac toe game written in Ruby that allows a human player to
-play against a program player. The game will only result in a win for
-the program player or a draw.
+play against a program player.
 
 To play, download the repository and run `ruby tic_tac_toe.rb` inside
 the main directory. During game play you can mark tiles on the board by
