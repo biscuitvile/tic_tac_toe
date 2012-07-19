@@ -150,23 +150,17 @@ module TicTacToe
       win_possibilities_for('o').any?
     end
 
-    def prevent_or_take_win(opt)
-      target_marks = opt == 'prevent' ? board.x_marks : board.o_marks
-      WINS.each do |win|
-        difference = win - target_marks
-        if difference.count == 1 && board.position_at(difference.first).mark == ' '
-          board.position_at(difference[0]).set_mark('o')
-          return
-        end
-      end
+    def location_to_win(player)
+      target_marks = player == 'x' ? board.x_marks : board.o_marks
+      (win_possibilities_for(player).first - target_marks).first
     end
 
     def prevent_win
-      prevent_or_take_win('prevent')
+      board.position_at(location_to_win('x')).set_mark('o')
     end
 
     def take_win
-      prevent_or_take_win('take')
+      board.position_at(location_to_win('o')).set_mark('o')
     end
 
     def humanize
