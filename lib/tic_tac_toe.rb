@@ -119,6 +119,10 @@ module TicTacToe
         take_win
       elsif win_must_be_prevented?
         prevent_win
+      elsif program_can_fork?
+        take_fork
+      elsif opponent_can_fork?
+        prevent_fork
       else
         play_random
       end
@@ -161,6 +165,59 @@ module TicTacToe
 
     def take_win
       board.position_at(location_to_win('o')).set_mark('o')
+    end
+
+    def fork_possibilities_for(player_mark)
+      board.available_positions.collect do |location|
+        new_board = Marshal.load(Marshal.dump(board))
+        new_board.position_at(location).set_mark(player_mark)
+
+        if win_possibilities_for(player_mark).count >= 2
+          location
+        end
+      end.compact
+    end
+
+    def program_can_fork?
+      forks = fork_possibilities_for('o')
+      if forks.count > 0
+        forks.first
+      end
+    end
+
+    def take_fork
+      board.position_at(program_can_fork?).set_mark('o')
+    end
+
+    def opponent_can_fork?
+      forks = fork_possibilities_for('x')
+      if forks.count > 0
+        forks.first
+      end
+    end
+
+    def opponent_fork_positions
+      opponent_can_fork?
+    end
+
+    def prevent_fork
+      if locations_to_force_opponent_into_defending.count > 0
+        position = locations_to_force_opponent_into_defending.first
+        board.position_at(position).set_mark('o')
+      else
+        board.position_at(opponent_can_fork?).set_mark('o')
+      end
+    end
+
+    def locations_to_force_opponent_into_defending
+      opponent_fork_positions.collect do |location|
+        new_board = Marshal.load(Marshal.dump(board))
+        new_board.position_at(location).set_mark(player_mark)
+
+        if win_possibilities_for('o').count > 0
+          location
+        end
+      end.compact
     end
 
     def humanize
