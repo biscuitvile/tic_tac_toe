@@ -132,20 +132,22 @@ module TicTacToe
       board.position_at(random_location).set_mark('o')
     end
 
-    def win_can_occur?(player)
+    def win_possibilities_for(player)
       target_marks = player == 'x' ? board.x_marks : board.o_marks
-      WINS.any? do |win|
+      WINS.collect do |win|
         difference = win - target_marks
-        difference.count == 1 && board.position_at(difference.first).mark == ' '
-      end
+        if difference.count == 1 && board.position_at(difference.first).mark == ' '
+          win
+        end
+      end.compact
     end
 
     def win_must_be_prevented?
-      win_can_occur?('x')
+      win_possibilities_for('x').any?
     end
 
     def program_can_win?
-      win_can_occur?('o')
+      win_possibilities_for('o').any?
     end
 
     def prevent_or_take_win(opt)
