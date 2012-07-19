@@ -26,7 +26,7 @@ module TicTacToe
     end
 
     def play
-      [:human_turn, :program_turn].cycle do |turn|
+      [:opponent_turn, :program_turn].cycle do |turn|
         system('clear')
         board.draw
         check_for_win_or_draw
@@ -42,7 +42,7 @@ module TicTacToe
     attr_reader :board
     attr_accessor :state, :replay_answer, :winner
 
-    def human_turn
+    def opponent_turn
       puts "Make your move"
       location = ''
       until board.available_positions.include?(location)
@@ -70,7 +70,7 @@ module TicTacToe
     def check_win
       WINS.each do |win|
         ['x', 'o'].each do |player|
-          if win.all?{ |p| board.send(player + '_marks').include?(p) }
+          if win.all?{ |p| board.positions_marked(player).include?(p) }
             self.state = 'ended'
             self.winner = player
           end
@@ -132,8 +132,8 @@ module TicTacToe
       board.position_at(random_location).set_mark('o')
     end
 
-    def win_possibilities_for(player)
-      target_marks = player == 'x' ? board.x_marks : board.o_marks
+    def win_possibilities_for(player_mark)
+      target_marks = board.positions_marked(player_mark)
       WINS.collect do |win|
         difference = win - target_marks
         if difference.count == 1 && board.position_at(difference.first).mark == ' '
@@ -150,9 +150,9 @@ module TicTacToe
       win_possibilities_for('o').any?
     end
 
-    def location_to_win(player)
-      target_marks = player == 'x' ? board.x_marks : board.o_marks
-      (win_possibilities_for(player).first - target_marks).first
+    def location_to_win(player_mark)
+      target_marks = board.positions_marked(player_mark)
+      (win_possibilities_for(player_mark).first - target_marks).first
     end
 
     def prevent_win
@@ -168,25 +168,29 @@ module TicTacToe
     end
 
     def first_program_turn?
-      board.o_marks.none?
+      board.positions_marked('o').none?
     end
 
     def react_to_opening_move
-      play_center if human_opened_with_corner?
-      play_corner if human_opened_with_center?
-      play_center if human_opened_with_edge?
+      play_center if opponent_opened_with_corner?
+      play_corner if opponent_opened_with_center?
+      play_center if opponent_opened_with_edge?
     end
 
-    def human_opened_with_corner?
-      board.x_marks.count == 1 and %w[nw sw ne se].include?(board.x_marks.first)
+    def opponent_marks
+      board.positions_marked('x')
     end
 
-    def human_opened_with_edge?
-      board.x_marks.count == 1 and %w[n s e w].include?(board.x_marks.first)
+    def opponent_opened_with_corner?
+      opponent_marks.count == 1 and %w[nw sw ne se].include?(opponent_marks.first)
     end
 
-    def human_opened_with_center?
-      board.x_marks == ['c']
+    def opponent_opened_with_edge?
+      opponent_marks.count == 1 and %w[n s e w].include?(opponent_marks.first)
+    end
+
+    def opponent_opened_with_center?
+      opponent_marks == ['c']
     end
 
     def play_center
@@ -229,16 +233,12 @@ module TicTacToe
       positions.select{ |p| p.location == location }.first
     end
 
-    def x_marks
-      positions.collect { |p| p.location if p.mark == 'x' }.compact
-    end
-
-    def o_marks
-      positions.collect { |p| p.location if p.mark == 'o' }.compact
+    def positions_marked(mark)
+      positions.collect { |p| p.location if p.mark == mark }.compact
     end
 
     def available_positions
-      positions.collect { |p| p.location if p.mark == ' ' }.compact
+      positions_marked(' ')
     end
 
     private
